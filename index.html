@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>MasterPRO FuelCalc Full</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --page-bg: #E5E5E5;
+      --card-bg: #ffffff;
+      --card-border: #e5e7eb;
+      --text-primary: #111827;
+      --text-muted: #6b7280;
+      --input-bg: #f8fafc;
+      --input-border: #e5e7eb;
+      --control-bg: #f3f4f6;
+      --result-bg: #f8fafc;
+      --total-color: #dc2626;
+      --toggle-bg: #ffffff;
+      --toggle-border: #e5e7eb;
+      --hint-color: #6b7280;
+    }
+    body.dark {
+      --page-bg: #0b1220;
+      --card-bg: #0f1724;
+      --card-border: #374151;
+      --text-primary: #e5e7eb;
+      --text-muted: #9ca3af;
+      --input-bg: #0b1220;
+      --input-border: #374151;
+      --control-bg: #071024;
+      --result-bg: transparent;
+      --total-color: #FF0000;
+      --toggle-bg: #0b1220;
+      --toggle-border: #374151;
+      --hint-color: #9ca3af;
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Inter', sans-serif;
+      background: var(--page-bg);
+      color: var(--text-primary);
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      width: 100%;
+      max-width: 640px;
+    }
+
+    .control-input {
+      height: 38px;
+      background: var(--input-bg);
+      border: 1px solid var(--input-border);
+      color: var(--text-primary);
+      border-radius: 6px;
+      padding: 0 10px;
+    }
+
+    .btn-custom {
+      height: 38px;
+      background: var(--control-bg);
+      border: 1px solid var(--card-border);
+      color: var(--text-primary);
+      border-radius: 6px;
+      white-space: nowrap;
+      padding: 0 15px;
+      font-size: 13px;
+    }
+
+    .results-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      background: var(--result-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 6px;
+    }
+
+    .results-col { padding: 12px; }
+    .results-divider { border-left: 1px solid var(--card-border); }
+
+    #resTotal { color: var(--total-color); font-weight: 800; font-size: 20px; }
+
+    /* Адаптивность */
+    @media (max-width: 640px) {
+      .results-grid { grid-template-columns: 1fr; }
+      .results-divider { border-left: none; border-top: 1px solid var(--card-border); }
+      .mobile-stack { flex-direction: column; gap: 12px; }
+      .mobile-full { width: 100% !important; }
+    }
+  </style>
+</head>
+<body class="p-4 flex justify-center">
+
+  <div class="card relative p-4 sm:p-6">
+    <button id="themeToggle" class="absolute top-4 right-4 w-9 h-9 flex items-center justify-center border rounded-md" style="background: var(--toggle-bg); border-color: var(--toggle-border);">
+      <svg id="iconSun" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.77" x2="5.64" y2="18.35"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+      <svg id="iconMoon" class="w-5 h-5 hidden" viewBox="0 0 24 24" fill="none" stroke="#f3f4f6" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+    </button>
+
+    <div class="text-center mb-6">
+      <h1 class="font-semibold uppercase tracking-tight text-gray-600" style="color:var(--text-primary)">КАЛЬКУЛЯТОР</h1>
+      <p class="text-sm" style="color:var(--text-muted)">стоимости поездки</p>
+    </div>
+
+    <div class="space-y-4">
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div>
+          <label class="block text-xs mb-1" style="color:var(--text-muted)">Цена топлива (€/л)</label>
+          <input id="fuelPrice" type="number" step="0.01" value="1.65" class="w-full control-input">
+        </div>
+        <div>
+          <label class="block text-xs mb-1" style="color:var(--text-muted)">Пробег (км.)</label>
+          <input id="distance" type="number" value="100" class="w-full control-input">
+        </div>
+        <div>
+          <label class="block text-xs mb-1" style="color:var(--text-muted)">Расход (л/100км)</label>
+          <input id="avgCons" type="number" step="0.1" value="7.5" class="w-full control-input">
+        </div>
+      </div>
+
+      <div class="flex flex-col sm:flex-row sm:items-end gap-4">
+        <div class="flex items-center space-x-2 pb-2">
+          <input id="roundTrip" type="checkbox" class="w-4 h-4">
+          <label for="roundTrip" class="text-sm" style="color:var(--text-muted)">Обратно</label>
+        </div>
+        <div class="flex-1">
+          <label class="block text-xs mb-1" style="color:var(--text-muted)">Пассажиры</label>
+          <input id="passengers" type="number" min="1" value="1" class="w-full control-input">
+        </div>
+        <div class="flex-1">
+          <label class="block text-xs mb-1" style="color:var(--text-muted)">Режим</label>
+          <select id="driveMode" class="w-full control-input">
+            <option value="mixed">Смешанный</option>
+            <option value="city">Город (↑)</option>
+            <option value="highway">Трасса (↓)</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="flex flex-col sm:flex-row gap-2">
+        <button id="addSegment" class="btn-custom flex-1">Добавить сегмент</button>
+        <button id="reset" class="btn-custom flex-1">Сбросить значения</button>
+      </div>
+
+      <div id="segmentsContainer" class="space-y-2"></div>
+
+      <div class="results-grid">
+        <div class="results-col space-y-2">
+          <div class="flex justify-between text-sm">
+            <span style="color:var(--text-muted)">Топливо всего:</span>
+            <span class="font-semibold"><span id="resPrice">0.00</span> л</span>
+          </div>
+          <div class="flex justify-between text-sm">
+            <span style="color:var(--text-muted)">Километры:</span>
+            <span class="font-semibold"><span id="resDist">0</span> км</span>
+          </div>
+          <div class="flex justify-between text-sm">
+            <span style="color:var(--text-muted)">Расход на 1 км:</span>
+            <span class="font-semibold"><span id="resLpk">0.0000</span> л</span>
+          </div>
+        </div>
+        <div class="results-col results-divider space-y-2">
+          <div class="flex justify-between text-sm">
+            <span style="color:var(--text-muted)">Цена за 1 км:</span>
+            <span class="font-semibold"><span id="resCpk">0.0000</span> €</span>
+          </div>
+          <div class="flex justify-between text-sm">
+            <span style="color:var(--text-muted)">На человека:</span>
+            <span class="font-semibold"><span id="resPerPassenger">0.00</span> €</span>
+          </div>
+          <div class="pt-2 border-t flex justify-between items-center" style="border-color:var(--card-border)">
+            <span class="text-[10px] font-bold uppercase" style="color:var(--text-muted)">Итого:</span>
+            <span id="resTotal">0.00</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="text-center text-[10px] uppercase tracking-widest pt-4" style="color:var(--text-muted)">
+        &copy; <span id="year"></span> MasterPRO FuelCalc
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const $ = id => document.getElementById(id);
+    const themeToggle = $('themeToggle');
+    const bodyEl = document.body;
+
+    // Theme Logic
+    function setTheme(dark) {
+      dark ? bodyEl.classList.add('dark') : bodyEl.classList.remove('dark');
+      $('iconSun').style.display = dark ? 'none' : 'block';
+      $('iconMoon').style.display = dark ? 'block' : 'none';
+      localStorage.setItem('fuelcalc_dark', dark ? '1' : '0');
+    }
+    themeToggle.onclick = () => setTheme(!bodyEl.classList.contains('dark'));
+    if(localStorage.getItem('fuelcalc_dark') === '1') setTheme(true);
+
+    // Calc Logic
+    const fuelInput = $('fuelPrice'), distInput = $('distance'), avgInput = $('avgCons');
+    const passInput = $('passengers'), rtCheck = $('roundTrip'), modeSelect = $('driveMode');
+    const segmentsContainer = $('segmentsContainer');
+    const multipliers = { mixed: 1.0, city: 1.2, highway: 0.9 };
+
+    function calculate() {
+      const price = parseFloat(fuelInput.value) || 0;
+      const passengers = Math.max(1, parseInt(passInput.value) || 1);
+      
+      let totalDist = parseFloat(distInput.value) || 0;
+      let totalLiters = (totalDist * ((parseFloat(avgInput.value) || 0) * multipliers[modeSelect.value])) / 100;
+
+      segmentsContainer.querySelectorAll('.segment-row').forEach(row => {
+        const d = parseFloat(row.querySelector('.s-dist').value) || 0;
+        const a = parseFloat(row.querySelector('.s-avg').value) || 0;
+        const m = multipliers[row.querySelector('.s-mode').value];
+        totalDist += d;
+        totalLiters += (d * (a * m)) / 100;
+      });
+
+      if (rtCheck.checked) { totalDist *= 2; totalLiters *= 2; }
+
+      const totalCost = totalLiters * price;
+      const lpk = totalDist > 0 ? totalLiters / totalDist : 0;
+      const cpk = lpk * price;
+
+      $('resPrice').textContent = totalLiters.toFixed(2);
+      $('resDist').textContent = totalDist.toFixed(1);
+      $('resLpk').textContent = lpk.toFixed(4);
+      $('resCpk').textContent = cpk.toFixed(4);
+      $('resTotal').textContent = totalCost.toFixed(2);
+      $('resPerPassenger').textContent = (totalCost / passengers).toFixed(2);
+    }
+
+    $('addSegment').onclick = () => {
+      const div = document.createElement('div');
+      div.className = "segment-row grid grid-cols-2 sm:grid-cols-4 gap-2 p-2 border rounded-md";
+      div.style.borderColor = "var(--card-border)";
+      div.innerHTML = `
+        <input type="number" placeholder="Км" class="s-dist control-input text-sm">
+        <input type="number" placeholder="Расход" class="s-avg control-input text-sm">
+        <select class="s-mode control-input text-sm"><option value="mixed">Смеш.</option><option value="city">Город</option><option value="highway">Трасса</option></select>
+        <button class="text-red-500 text-xs uppercase font-bold" onclick="this.parentElement.remove(); calculate();">Удалить</button>
+      `;
+      segmentsContainer.appendChild(div);
+      div.querySelectorAll('input, select').forEach(el => el.oninput = calculate);
+    };
+
+    $('reset').onclick = () => { if(confirm('Сбросить?')) location.reload(); };
+    [fuelInput, distInput, avgInput, passInput, rtCheck, modeSelect].forEach(el => el.oninput = calculate);
+    $('year').textContent = new Date().getFullYear();
+    calculate();
+  </script>
+</body>
+</html>
