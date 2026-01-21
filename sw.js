@@ -3,8 +3,8 @@ const TO_CACHE = [
   '/calc.html',
   '/manifest.json',
   // перечисли CSS/JS/иконки, которые нужны офлайн
-  'icon-192.png',
-  'icon-512.png'
+  'https://i.postimg.cc/vTjRFj9f/icon-192.png',
+  'https://i.postimg.cc/2yJpRJvQ/icon-512.png'
 ];
 
 self.addEventListener('install', (event) => {
@@ -22,4 +22,5 @@ self.addEventListener('fetch', (event) => {
   event.respondWith(
     caches.match(event.request).then(r => r || fetch(event.request))
   );
+
 });
